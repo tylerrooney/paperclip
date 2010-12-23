@@ -89,20 +89,27 @@ module Paperclip
 
       return nil if uploaded_file.nil?
 
-      @queued_for_write[:original]   = to_tempfile(uploaded_file)
+      # Upload is already a temp file
+      # @queued_for_write[:original]   = to_tempfile(uploaded_file)
+      @queued_for_write[:original]   = uploaded_file
       instance_write(:file_name,       uploaded_file.original_filename.strip)
       instance_write(:content_type,    uploaded_file.content_type.to_s.strip)
       instance_write(:file_size,       uploaded_file.size.to_i)
-      instance_write(:fingerprint,     generate_fingerprint(uploaded_file))
+      # instance_write(:fingerprint,     generate_fingerprint(uploaded_file))
       instance_write(:updated_at,      Time.now)
-
+            
       @dirty = true
 
       post_process
 
       # Reset the file size if the original file was reprocessed.
       instance_write(:file_size,   @queued_for_write[:original].size.to_i)
-      instance_write(:fingerprint, generate_fingerprint(@queued_for_write[:original]))
+      # instance_write(:fingerprint, generate_fingerprint(@queued_for_write[:original]))
+
+      # Store original width and height
+      geo = Paperclip::Geometry.from_file(uploaded_file)
+      instance_write(:width, geo.width)
+      instance_write(:height, geo.height)
     ensure
       uploaded_file.close if close_uploaded_file
     end

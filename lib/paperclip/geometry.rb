@@ -14,12 +14,14 @@ module Paperclip
     # Uses ImageMagick to determing the dimensions of a file, passed in as either a
     # File or path.
     def self.from_file file
+      # identify doesn't recognize x-icon files with no file extension
+      icon_prefix = file.content_type == 'image/x-icon' ? 'icon:' : ''
       file = file.path if file.respond_to? "path"
       geometry = begin
-                   Paperclip.run("identify", "-format %wx%h :file", :file => "#{file}[0]")
+                   Paperclip.run("identify", "-format %wx%h #{icon_prefix}:file", :file => "#{file}[0]")
                  rescue PaperclipCommandLineError
                    ""
-                 end
+                 end.chomp
       parse(geometry) ||
         raise(NotIdentifiedByImageMagickError.new("#{file} is not recognized by the 'identify' command."))
     end

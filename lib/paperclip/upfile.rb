@@ -3,11 +3,13 @@ module Paperclip
   # to the +File+ class. Useful for testing.
   #   user.avatar = File.new("test/test_avatar.jpg")
   module Upfile
-
-    # Infer the MIME-type of the file from the extension.
+    attr_writer :original_filename, :content_type
+    
     def content_type
+      return @content_type if @content_type
+      
       type = (self.path.match(/\.(\w+)$/)[1] rescue "octet-stream").downcase
-      case type
+      @content_type = case type
       when %r"jp(e|g|eg)"            then "image/jpeg"
       when %r"tiff?"                 then "image/tiff"
       when %r"png", "gif", "bmp"     then "image/#{type}"
@@ -25,7 +27,7 @@ module Paperclip
 
     # Returns the file's normal name.
     def original_filename
-      File.basename(self.path)
+      @original_filename || File.basename(self.path)
     end
 
     # Returns the size of the file.
